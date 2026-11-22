@@ -1,0 +1,59 @@
+.nopink-collect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+  width: 28px;
+  height: 20px;
+  border-radius: 9999px;
+  border: 1px solid rgba(244, 33, 46, 0.55);
+  background: rgba(244, 33, 46, 0.12);
+  color: #f4212e;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.nopink-collect-btn:hover {
+  background: rgba(244, 33, 46, 0.25);
+  transform: scale(1.05);
+}
+
+.nopink-collect-btn.nopink-saved {
+  border-color: rgba(0, 186, 124, 0.7);
+  background: rgba(0, 186, 124, 0.18);
+  color: #00ba7c;
+}
+
+.nopink-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #15202b;
+  color: #f7f9f9;
+  border: 1px solid #38444d;
+  font-size: 13px;
+  font-family: system-ui, -apple-system, sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.nopink-toast.nopink-toast-err {
+  border-color: #f4212e;
+  color: #ff8088;
+}
+
+.nopink-toast.nopink-toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NoPink Collector</title>
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 14px;
+      background: #0f1419;
+      color: #e7e9ea;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: #f4212e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-size: 12px;
+      background: #1d262f;
+      color: #00ba7c;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #2f3336;
+    }
+    .field {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      color: #8b98a5;
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 7px 9px;
+      border-radius: 6px;
+      border: 1px solid #2f3336;
+      background: #16181c;
+      color: #e7e9ea;
+      font-size: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #f4212e;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .btn-secondary {
+      background: #1d262f;
+      color: #e7e9ea;
+      border: 1px solid #2f3336;
+      margin-bottom: 6px;
+    }
+    .btn-small {
+      width: auto;
+      white-space: nowrap;
+      padding: 7px 10px;
+    }
+    .btn-danger {
+      background: transparent;
+      color: #f4212e;
+      border: 1px solid rgba(244, 33, 46, 0.4);
+      margin-top: 4px;
+    }
+    #status {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #8b98a5;
+      min-height: 16px;
+      word-break: break-all;
+    }
+    .ok { color: #00ba7c !important; }
+    .err { color: #f4212e !important; }
+  </style>
+</head>
+<body>
+  <h1>
+    <span>NoPink Collector</span>
+    <span id="countBadge" class="badge">0 条</span>
+  </h1>
+
+  <div class="field">
+    <label>本机标识 (Machine ID，每台电脑独立)</label>
+    <div class="row">
+      <input type="text" id="machineIdInput" placeholder="pc-xxxxxxxx" />
+      <button id="saveMachineBtn" class="btn-secondary btn-small">保存</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>加密口令 (Passphrase，用于 AES-256-GCM 加密)</label>
+    <input type="password" id="passphraseInput" placeholder="输入加密口令（各电脑需一致）" />
+  </div>
+
+  <button id="pickDirBtn" class="btn-secondary">选择 OneDrive 同步目录（推荐）</button>
+  <button id="exportBtn" class="btn-primary">加密导出 .npdb</button>
+  <button id="clearBtn" class="btn-danger">清空本机已采集缓存</button>
+
+  <div id="status"></div>
+
+  <script src="crypto.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

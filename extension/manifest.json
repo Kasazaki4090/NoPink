@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "NoPink Collector",
+  "version": "0.1.0",
+  "description": "在 X (Twitter) 头像旁一键采集账号与发言，按电脑独立加密打包为 .npdb 同步至 OneDrive。",
+  "permissions": [
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "NoPink Collector"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
