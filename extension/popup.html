@@ -5,7 +5,7 @@
   <title>NoPink Collector</title>
   <style>
     body {
-      width: 320px;
+      width: 330px;
       margin: 0;
       padding: 14px;
       background: #0f1419;
@@ -28,6 +28,19 @@
       padding: 2px 8px;
       border-radius: 999px;
       border: 1px solid #2f3336;
+    }
+    .section-box {
+      border: 1px solid #2f3336;
+      background: #13171d;
+      border-radius: 8px;
+      padding: 9px 10px;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f4212e;
+      margin-bottom: 6px;
     }
     .field {
       margin-bottom: 10px;
@@ -72,6 +85,10 @@
       border: 1px solid #2f3336;
       margin-bottom: 6px;
     }
+    .btn-active-scroll {
+      background: #00ba7c !important;
+      color: #0f1419 !important;
+    }
     .btn-small {
       width: auto;
       white-space: nowrap;
@@ -99,6 +116,18 @@
     <span>NoPink Collector</span>
     <span id="countBadge" class="badge">0 条</span>
   </h1>
+
+  <div class="section-box">
+    <div class="section-title">单用户整页提取（防限流慢速 + 过滤路人）</div>
+    <div class="row" style="margin-bottom: 6px;">
+      <input type="text" id="targetHandleInput" placeholder="@JiSihuo67922（自动识别）" style="flex: 1;" />
+      <input type="number" id="maxLimitInput" min="0" max="500" value="60" title="单次自动滚页采集上限（默认 60 条防 X 限流，0 为不限）" style="width: 64px; box-sizing: border-box; padding: 7px 6px; border-radius: 6px; border: 1px solid #2f3336; background: #16181c; color: #00ba7c; font-size: 12px; font-weight: 600; text-align: center;" />
+    </div>
+    <div class="row">
+      <button id="batchVisibleBtn" class="btn-secondary" style="margin-bottom: 0;">提取当前屏</button>
+      <button id="batchScrollBtn" class="btn-primary" style="margin-bottom: 0;">自动滚页提取</button>
+    </div>
+  </div>
 
   <div class="field">
     <label>本机标识 (Machine ID，每台电脑独立)</label>

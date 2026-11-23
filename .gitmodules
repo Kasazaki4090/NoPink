@@ -1,0 +1,15 @@
+[submodule "reference/dirty-cnwords"]
+	path = reference/dirty-cnwords
+	url = https://github.com/dablelv/dirty-cnwords.git
+[submodule "reference/zuan"]
+	path = reference/zuan
+	url = https://github.com/hua515/zuan.git
+[submodule "reference/ToxiCN"]
+	path = reference/ToxiCN
+	url = https://github.com/DUT-lujunyu/ToxiCN.git
+[submodule "reference/COLDataset"]
+	path = reference/COLDataset
+	url = https://github.com/thu-coai/COLDataset.git
+[submodule "reference/feedsieve"]
+	path = reference/feedsieve
+	url = https://github.com/realchendahuang/feedsieve.git

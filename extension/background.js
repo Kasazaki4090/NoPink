@@ -3,6 +3,13 @@
 const STORAGE_KEY_RECORDS = "nopink_records";
 const STORAGE_KEY_MACHINE = "nopink_machine_id";
 
+let storageQueue = Promise.resolve();
+function withStorageLock(fn) {
+  const next = storageQueue.then(fn, fn);
+  storageQueue = next.catch(() => {});
+  return next;
+}
+
 async function ensureMachineId() {
   const data = await chrome.storage.local.get(STORAGE_KEY_MACHINE);
   if (data[STORAGE_KEY_MACHINE]) {
@@ -20,16 +27,58 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     if (msg.type === "SAVE_RECORD") {
-      const data = await chrome.storage.local.get(STORAGE_KEY_RECORDS);
-      const records = Array.isArray(data[STORAGE_KEY_RECORDS])
-        ? data[STORAGE_KEY_RECORDS]
-        : [];
-      const exists = records.some((r) => r.id === msg.record.id);
-      if (!exists) {
-        records.push(msg.record);
-        await chrome.storage.local.set({ [STORAGE_KEY_RECORDS]: records });
-      }
-      sendResponse({ ok: true, duplicate: exists, total: records.length });
+      const result = await withStorageLock(async () => {
+        const data = await chrome.storage.local.get(STORAGE_KEY_RECORDS);
+        const records = Array.isArray(data[STORAGE_KEY_RECORDS])
+          ? data[STORAGE_KEY_RECORDS]
+          : [];
+        const exists = records.some((r) => r.id === msg.record.id);
+        if (!exists) {
+          records.push(msg.record);
+          await chrome.storage.local.set({ [STORAGE_KEY_RECORDS]: records });
+        }
+        return { ok: true, duplicate: exists, total: records.length };
+      });
+      sendResponse(result);
+      return;
+    }
+
+    if (msg.type === "SAVE_RECORDS_BATCH") {
+      const incoming = Array.isArray(msg.records) ? msg.records : [];
+      const result = await withStorageLock(async () => {
+        const data = await chrome.storage.local.get(STORAGE_KEY_RECORDS);
+        const records = Array.isArray(data[STORAGE_KEY_RECORDS])
+          ? data[STORAGE_KEY_RECORDS]
+          : [];
+        const existingIds = new Set(records.map((r) => r.id));
+        let addedCount = 0;
+        let duplicateCount = 0;
+        const addedIds = [];
+
+        for (const rec of incoming) {
+          if (!rec || !rec.id) continue;
+          if (existingIds.has(rec.id)) {
+            duplicateCount++;
+          } else {
+            existingIds.add(rec.id);
+            records.push(rec);
+            addedIds.push(rec.id);
+            addedCount++;
+          }
+        }
+
+        if (addedCount > 0) {
+          await chrome.storage.local.set({ [STORAGE_KEY_RECORDS]: records });
+        }
+        return {
+          ok: true,
+          addedCount,
+          duplicateCount,
+          addedIds,
+          total: records.length
+        };
+      });
+      sendResponse(result);
       return;
     }
 

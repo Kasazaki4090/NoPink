@@ -4,6 +4,8 @@ const IDB_NAME = "nopink_fs_db";
 const IDB_STORE = "handles";
 const HANDLE_KEY = "onedrive_dir";
 
+let activeTabScrolling = false;
+
 function setStatus(text, type = "") {
   const el = document.getElementById("status");
   el.textContent = text;
@@ -47,11 +49,62 @@ function sendMsg(payload) {
   });
 }
 
+async function sendToActiveTab(payload) {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = tabs && tabs[0];
+  if (!tab || !tab.id) {
+    return { ok: false, error: "未找到当前活动标签页" };
+  }
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tab.id, payload, (resp) => {
+      if (chrome.runtime.lastError) {
+        resolve({
+          ok: false,
+          error: "请先在 X (x.com) 页面打开并刷新后再使用批量提取"
+        });
+        return;
+      }
+      resolve(resp || { ok: false, error: "页面无响应" });
+    });
+  });
+}
+
+function updateScrollBtnUI(isScrolling) {
+  activeTabScrolling = Boolean(isScrolling);
+  const btn = document.getElementById("batchScrollBtn");
+  if (!btn) return;
+  if (activeTabScrolling) {
+    btn.textContent = "⏹ 停止滚页";
+    btn.classList.add("btn-active-scroll");
+  } else {
+    btn.textContent = "自动滚页提取";
+    btn.classList.remove("btn-active-scroll");
+  }
+}
+
+async function refreshCountBadge() {
+  const state = await sendMsg({ type: "GET_STATE" });
+  if (state && state.ok) {
+    document.getElementById("countBadge").textContent = `${state.records.length} 条`;
+  }
+}
+
 async function init() {
   const state = await sendMsg({ type: "GET_STATE" });
   if (state && state.ok) {
     document.getElementById("machineIdInput").value = state.machineId;
     document.getElementById("countBadge").textContent = `${state.records.length} 条`;
+  }
+
+  const pageInfo = await sendToActiveTab({ type: "GET_PAGE_TARGET" });
+  if (pageInfo && pageInfo.ok) {
+    if (pageInfo.targetHandle) {
+      document.getElementById("targetHandleInput").value = pageInfo.targetHandle;
+    }
+    if (typeof pageInfo.maxLimit === "number") {
+      document.getElementById("maxLimitInput").value = String(pageInfo.maxLimit);
+    }
+    updateScrollBtnUI(pageInfo.isAutoScrolling);
   }
 
   if (chrome.storage.session) {
@@ -66,6 +119,56 @@ async function init() {
     setStatus(`已绑定目录: ${dirHandle.name}（导出将直接覆盖写入）`, "ok");
   }
 }
+
+document.getElementById("batchVisibleBtn").addEventListener("click", async () => {
+  const targetHandle = document.getElementById("targetHandleInput").value.trim();
+  const res = await sendToActiveTab({
+    type: "BATCH_COLLECT_VISIBLE",
+    targetHandle
+  });
+  if (res && res.ok) {
+    if (res.targetHandle) {
+      document.getElementById("targetHandleInput").value = res.targetHandle;
+    }
+    await refreshCountBadge();
+    setStatus(
+      `已提取 ${res.targetHandle}：新增 ${res.addedCount} 条（过滤路人 ${res.skippedOtherUsers} 条）· 共 ${res.total} 条`,
+      "ok"
+    );
+  } else {
+    setStatus((res && res.error) || "提取失败", "err");
+  }
+});
+
+document.getElementById("batchScrollBtn").addEventListener("click", async () => {
+  if (activeTabScrolling) {
+    const res = await sendToActiveTab({ type: "STOP_AUTO_SCROLL" });
+    updateScrollBtnUI(false);
+    await refreshCountBadge();
+    if (res && res.ok) {
+      setStatus("已发送停止自动滚页指令", "ok");
+    }
+    return;
+  }
+
+  const targetHandle = document.getElementById("targetHandleInput").value.trim();
+  const maxLimitVal = parseInt(document.getElementById("maxLimitInput").value, 10);
+  const maxLimit = !Number.isNaN(maxLimitVal) && maxLimitVal >= 0 ? maxLimitVal : 60;
+  const res = await sendToActiveTab({
+    type: "START_AUTO_SCROLL",
+    targetHandle,
+    maxLimit
+  });
+  if (res && res.ok) {
+    if (res.targetHandle) {
+      document.getElementById("targetHandleInput").value = res.targetHandle;
+    }
+    updateScrollBtnUI(true);
+    setStatus(`正在慢速采集 ${res.targetHandle}（单次上限 ${maxLimit || "不限"} 条，遇限流自动刹车）`, "ok");
+  } else {
+    setStatus((res && res.error) || "启动自动滚页失败", "err");
+  }
+});
 
 document.getElementById("saveMachineBtn").addEventListener("click", async () => {
   const val = document.getElementById("machineIdInput").value;
